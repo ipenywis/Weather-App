@@ -37,3 +37,28 @@
   justify-content: center;
   margin-top: 20em;
 }
+
+/*Details Page*/
+.details-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.details-inner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.todays-weather {
+  width: fit-content;
+}
+
+.upcoming-days {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 6em;
+}

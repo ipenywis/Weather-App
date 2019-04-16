@@ -9,6 +9,7 @@ import {
 import HomePage from "./components/pages/home.jsx";
 
 import "./App.scss";
+import DetailsPage from "./components/pages/details.jsx";
 
 class App extends Component {
   constructor(props) {
@@ -23,7 +24,18 @@ class App extends Component {
             <Switch>
               <Route
                 path="/"
+                exact
                 render={() => <HomePage baseAPIUrl={this.props.baseAPIUrl} />}
+              />
+              <Route
+                path="/weather/:woeid"
+                exact
+                render={({ match }) => (
+                  <DetailsPage
+                    woeid={match.params.woeid}
+                    baseAPIUrl={this.props.baseAPIUrl}
+                  />
+                )}
               />
               <Route render={() => <Redirect to="/" />} />
             </Switch>

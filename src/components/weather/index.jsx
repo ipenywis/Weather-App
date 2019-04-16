@@ -10,7 +10,7 @@ export default class Weather extends React.Component {
     const { image, location, temprature, max, min } = this.props;
 
     return (
-      <div className="weather">
+      <div className="weather" style={this.props.style}>
         <div className="inner-container">
           <div className="image">
             <img src={image} />

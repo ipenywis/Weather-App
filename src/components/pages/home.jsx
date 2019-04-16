@@ -67,7 +67,8 @@ export default class HomePage extends React.Component {
           {
             ...todaysWeather,
             title: locationRes.data[0].title,
-            image: weatherImage
+            image: weatherImage,
+            woeid: locationRes.data[0].woeid
           }
         ]
       }));
@@ -99,7 +100,7 @@ export default class HomePage extends React.Component {
             {!isLoading &&
               weatherData.map((data, idx) => {
                 return (
-                  <Link>
+                  <Link to={`/weather/${data.woeid}`}>
                     <Weather
                       image={data.image}
                       location={data.title}
