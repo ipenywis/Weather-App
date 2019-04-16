@@ -4,6 +4,7 @@ import Weather from "../weather";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { HashLoader } from "react-spinners";
+import SearchBar from "../search";
 
 export default class HomePage extends React.Component {
   constructor(props) {
@@ -93,6 +94,7 @@ export default class HomePage extends React.Component {
     const progress = weatherData.length * 16.7; ///< for calculating progress percentage
     return (
       <div className="home-container">
+        <SearchBar baseAPIUrl={this.props.baseAPIUrl} />
         <div className="home-inner-container">
           <div className="page-header">Today's Weather</div>
           <div className="weathers-container">

@@ -10,6 +10,7 @@ import HomePage from "./components/pages/home.jsx";
 
 import "./App.scss";
 import DetailsPage from "./components/pages/details.jsx";
+import Navigation from "./components/navigation.jsx";
 
 class App extends Component {
   constructor(props) {
@@ -19,8 +20,9 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <div className="inner-container">
-          <Router>
+        <Router>
+          <Navigation />
+          <div className="inner-container">
             <Switch>
               <Route
                 path="/"
@@ -37,10 +39,20 @@ class App extends Component {
                   />
                 )}
               />
+              <Route
+                path="/search/:cityName"
+                exact
+                render={({ match }) => (
+                  <DetailsPage
+                    cityName={match.params.cityName}
+                    baseAPIUrl={this.props.baseAPIUrl}
+                  />
+                )}
+              />
               <Route render={() => <Redirect to="/" />} />
             </Switch>
-          </Router>
-        </div>
+          </div>
+        </Router>
       </div>
     );
   }

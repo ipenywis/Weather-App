@@ -2,6 +2,7 @@ import React from "react";
 import Weather from "../weather";
 import { HashLoader } from "react-spinners";
 import axios from "axios";
+import SearchBar from "../search";
 
 export default class DetailsPage extends React.Component {
   constructor(props) {
@@ -11,7 +12,9 @@ export default class DetailsPage extends React.Component {
       upcomingDaysWeather: [],
       location: null,
       timezone: null,
-      isLoading: false
+      isLoading: false,
+      isError: false,
+      errors: []
     };
     //Days of the week
     this.weekDays = [
@@ -23,6 +26,22 @@ export default class DetailsPage extends React.Component {
       "Saturday",
       "Sunday"
     ];
+  }
+
+  setError(error, clearTimeout = true) {
+    this.setState({
+      isError: true,
+      errors: [error]
+    });
+    //Clear Errors after some time
+    if (clearTimeout)
+      setTimeout(() => {
+        this.clearAllErrors();
+      }, 5000);
+  }
+
+  clearAllErrors() {
+    this.setState({ isError: false, errors: [] });
   }
 
   /**
@@ -53,34 +72,68 @@ export default class DetailsPage extends React.Component {
     this.setState({ isLoading: false });
   }
 
-  async componentDidMount() {
-    const { baseAPIUrl, woeid } = this.props;
+  async getLocationWeather() {
+    const { baseAPIUrl, woeid, cityName } = this.props;
+    let url;
+    if (woeid) url = `${baseAPIUrl}/?command=location&woeid=${woeid}`;
+    else if (cityName) {
+      //Find using location name
+      const tempUrl = `${baseAPIUrl}/?command=search&keyword=${cityName}`;
+      const locationRes = await axios.get(tempUrl);
+      //Check if no location with keyword is found
+      if (!locationRes.data || locationRes.data.length === 0) {
+        this.setError(
+          "No results were found. Try changing the keyword!",
+          false
+        );
+        //Stop loading
+        return this.stopLoading();
+      }
+      url = `${baseAPIUrl}/?command=location&woeid=${
+        locationRes.data[0].woeid
+      }`;
+    }
+    const locationWeather = await axios.get(url).catch(err => {
+      this.stopLoading();
+    });
+    return locationWeather.data;
+  }
+
+  async prepareLocationWeather() {
     //Start Loading
     this.startLoading();
     //load Weather Data from API (through weather.php) for current woeid
-    const url = `${baseAPIUrl}/?command=location&woeid=${woeid}`;
-    const locationWeather = await axios.get(url).catch(err => {
-      console.error("Error Loading details for woeid: ", woeid);
-    });
-    if (!locationWeather) return;
+    const locationWeather = await this.getLocationWeather();
+    if (!locationWeather || locationWeather.length === 0) {
+      return this.stopLoading();
+    }
     //Upcoming weather data for the next 6 days with their corresponding images
     const upcomingDaysWeather = this.loadWeatherImageForLocations(
-      locationWeather.data.consolidated_weather.slice(1)
+      locationWeather.consolidated_weather.slice(1)
     );
     //Current weather
-    let todaysWeather = locationWeather.data.consolidated_weather[0];
+    let todaysWeather = locationWeather.consolidated_weather[0];
     //Load today's weather image
     todaysWeather = {
       ...todaysWeather,
       image: this.getWeatherImage(todaysWeather.weather_state_abbr)
     };
     //Location and Timezone
-    const location = locationWeather.data.title;
-    const timezone = locationWeather.data.timezone;
+    const location = locationWeather.title;
+    const timezone = locationWeather.timezone;
     //Set state
     this.setState({ upcomingDaysWeather, todaysWeather, location, timezone });
     //Stop Loading
     this.stopLoading();
+  }
+
+  componentDidMount() {
+    this.prepareLocationWeather();
+  }
+
+  componentWillReceiveProps() {
+    this.prepareLocationWeather();
+    window.location.reload();
   }
 
   renderLoading() {
@@ -100,10 +153,25 @@ export default class DetailsPage extends React.Component {
       todaysWeather,
       location,
       timezone,
-      isLoading
+      isLoading,
+      isError,
+      errors
     } = this.state;
     return (
       <div className="details-container">
+        {isError && (
+          <div className="errors-container">
+            {errors.map((err, idx) => {
+              return (
+                <div className="error" key={idx}>
+                  {err}
+                </div>
+              );
+            })}
+          </div>
+        )}
+        <SearchBar baseAPIUrl={this.props.baseAPIUrl} />
+        <hr />
         <div className="details-inner-container">
           <div className="page-header" style={{ fontSize: "32px" }}>
             {location}
@@ -112,7 +180,7 @@ export default class DetailsPage extends React.Component {
             {timezone}
           </div>
           {this.renderLoading()}
-          {!isLoading && (
+          {!isLoading && !isError && (
             <div className="todays-weather">
               <Weather
                 image={todaysWeather.image}
@@ -124,7 +192,7 @@ export default class DetailsPage extends React.Component {
               />
             </div>
           )}
-          {!isLoading && (
+          {!isLoading && !isError && (
             <div className="upcoming-days">
               {upcomingDaysWeather.map((data, idx) => {
                 const dayIdx = new Date(data.applicable_date).getDay() - 1;
