@@ -1,0 +1,30 @@
+.weather {
+  min-width: 10em;
+  min-height: 14em;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0px 0px 13px 0.7px rgba(15, 15, 15, 0.2);
+  border-radius: 5px;
+  margin-right: 3em;
+
+  .image {
+    width: 80px;
+    margin-bottom: 12px;
+  }
+
+  .location {
+    font-size: 21px;
+    margin-bottom: 12px;
+  }
+
+  .temprature {
+    font-size: 25px;
+    margin-bottom: 16px;
+  }
+
+  .temp {
+    display: flex;
+    justify-content: space-evenly;
+    color: rgb(86, 86, 86);
+  }
+}
